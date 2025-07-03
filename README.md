@@ -9,3 +9,7 @@ Virtual webcam streaming
 Frontend + API + Backend architecture
 
 💡 Main Idea: Process webcam frames, apply effects, and send them back as a continuous stream using a virtual camera so apps think it’s a regular live feed.
+
+## 📸 App Preview
+
+![App Screenshot](https://raw.githubusercontent.com/igbokwewinnie/Custom_Videobroadcaster/main/Screenshot%202025-07-03%20010012.png)
