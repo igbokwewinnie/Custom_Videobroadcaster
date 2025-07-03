@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Broadcaster</title>
+<style>
+  body.dark {
+    background-color: #121212 !important;
+    color: #f1f1f1 !important;
+  }
+
+  body.dark .container {
+    background: #1e1e1e !important;
+    border-color: #444 !important;
+  }
+
+  body.dark input,
+  body.dark select,
+  body.dark button {
+    background-color: #2a2a2a !important;
+    color: #f1f1f1 !important;
+    border-color: #555 !important;
+  }
+
+  body.dark #status {
+    background: #2a2a2a !important;
+    border-color: #444 !important;
+    color: #ddd !important;
+  }
+
+  body.dark label,
+  body.dark h1 {
+    color: #f1f1f1 !important;
+  }
+</style>
+
+
+</head>
+<body style=" margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  font-family: Arial, sans-serif;
+">
+   <!--- <h1 style="color: #333; margin-bottom: 20px;"> Welcome to my Broadcaster</h1>
+   <img src="./static/Video.jpg" alt="Broadcaster Preview" style="
+      width: 100%;
+      max-width: 350px;
+      height: auto;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    "> -->
+
+    <div class="container" style="
+    background-color: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 6px 6px rgba(0,0,0,0.15);
+    width: 800%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid #e0e0e0;
+    background: linear-gradient(145deg, #ffffff, #e6e6e6);
+  ">
+  <h1 style="color: #333; margin-bottom: 20px;"> Welcome to my Broadcaster</h1>
+        <div class="button" style="
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    ">
+        <button style="
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      " onmouseover="this.style.opacity='0.85'"
+  onmouseout="this.style.opacity='1'" onclick="getDevices()"> List Devices</button>
+        <button style="
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      " onmouseover="this.style.opacity='0.85'"
+  onmouseout="this.style.opacity='1'" onclick="startStream()"> Start Stream</button>
+        <button style="
+        padding: 10px 20px;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      " onmouseover="this.style.opacity='0.85'"
+  onmouseout="this.style.opacity='1'" onclick="stopStream()"> Stop Stream</button>
+        </div>
+
+        <div class="inputs" style="
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+    ">  
+            <label for="camera" style="font-weight: bold; color: #333;"> Choose camera </label>
+            <select id="camera" style="
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        outline: none;
+      "></select>
+
+            <label for="fps" style="font-weight: bold; color: #333;"> FPS </label>
+            <input id="fps" type="number"min="1" max="60" value="15"  style="
+        width: 97%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        outline: none;
+      ">
+
+            <label for="blur" style="font-weight: bold; color: #333;"> Blur Strength (odd number)</label>
+            <input id="blur" type="range" min="1" max="52" value="10" style="width: 100%;">
+
+            <label for="background" style="font-weight: bold; color: #333;"> Background</label>
+            <select id="background" style="
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        outline: none;
+      ">
+                <option value="none"> No Background</option>
+                <option value="blur"> Blur </option>
+                <option value="default"> Default</option>
+            </select>
+        </div>
+        <div id="status" style="
+        margin-top: 20px;
+        padding:10px;
+        border: 1px solid #ccc;
+        background: #e9ecef;
+        border-radius: 5px;"> Status: Waiting for action...</div>
+
+        <button onclick="toggleDarkMode()" style="
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #444;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+">
+    🌙 Toggle Dark Mode
+</button>
+
+    </div>
+
+    <script>
+        function getDevices(){
+        fetch('/devices')
+        .then(response => response.json())
+        .then(data=>{
+            const select = document.getElementById('camera');
+            select.innerHTML = '';
+            data.forEach(device => {
+                select.innerHTML += `<option value="${device.id}">${device.name}</option>`;
+            });
+        });
+            
+        
+    }
+    function startStream(){
+        const source = document.getElementById('camera').value;
+        const fps = document.getElementById('fps').value;
+        const blur = document.getElementById('blur').value;
+        const background = document.getElementById('background').value;
+
+        fetch(`/start?source=${source}&fps=${fps}&blur=${blur}&background=${background}`)
+
+    }
+
+    function stopStream(){
+        fetch('/stop')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('status').innerHTML  = data.message;
+        })
+        .catch(error => {
+            console.error("Error stopping stream:", error);
+            document.getElementById('status').innerHTML = "Status: Failed to stop stream.";
+        });
+    }
+
+     function updateBlurValue(value) {
+            document.getElementById('blurValue').innerText = `Blur Strength: ${value}`;
+        }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+      const isDark = document.body.classList.contains("dark");
+      localStorage.setItem("darkMode", isDark ? "on" : "off");
+    }
+
+    // Apply dark mode on load if saved
+    window.onload = function () {
+      if (localStorage.getItem("darkMode") === "on") {
+        document.body.classList.add("dark");
+      }
+    }
+    </script>
+</body>
+</html>
